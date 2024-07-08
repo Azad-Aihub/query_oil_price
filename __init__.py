@@ -1,1 +1,1 @@
-from .query_oil_price import *
+from .sd_paint import *
