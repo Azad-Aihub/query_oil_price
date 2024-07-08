@@ -11,7 +11,7 @@ ART_GENERATION_URL = "https://api.pearktrue.cn/api/stablediffusion/"
 @plugins.register(name="sd_paint",
                   desc="生成艺术图像",
                   version="1.0",
-                  author="your_name",
+                  author="azad",
                   desire_priority=100)
 class sd_paint(Plugin):
 
