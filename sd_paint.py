@@ -5,13 +5,13 @@ from bridge.context import ContextType
 from bridge.reply import Reply, ReplyType
 from common.log import logger
 
-# AI绘画API的基础URL
-SD_PAINT_URL = "https://api.pearktrue.cn/api/stablediffusion/"
+# 绘画生成API的基础URL
+ART_GENERATION_URL = "https://api.pearktrue.cn/api/stablediffusion/"
 
 @plugins.register(name="sd_paint",
-                  desc="AI绘画生成图像",
+                  desc="生成艺术图像",
                   version="1.0",
-                  author="wyh",
+                  author="your_name",
                   desire_priority=100)
 class sd_paint(Plugin):
 
@@ -21,7 +21,7 @@ class sd_paint(Plugin):
         logger.info(f"[{__class__.__name__}] inited")
 
     def get_help_text(self, **kwargs):
-        help_text = "发送【sd绘画 对应的绘画关键词】获取SD绘画生成的图片链接"
+        help_text = "发送【sd绘画 对应的绘画关键词】生成对应关键词的艺术图像"
         return help_text
 
     def on_handle_context(self, e_context: EventContext):
@@ -30,12 +30,12 @@ class sd_paint(Plugin):
             return
         content = e_context["context"].content.strip()
 
-        # 检查是否是sd绘画的指令
+        # 检查是否是绘画生成的指令
         if content.startswith("sd绘画") and " " in content:
             prompt = content.split("sd绘画", 1)[1].strip()
-            logger.info(f"[{__class__.__name__}] 收到AI绘画请求: {prompt}")
+            logger.info(f"[{__class__.__name__}] 收到绘画生成请求: {prompt}")
             reply = Reply()
-            result = self.get_sd_paint(prompt)
+            result = self.sd_paint(prompt)
             if result:
                 reply.type = ReplyType.TEXT
                 reply.content = result
@@ -43,24 +43,27 @@ class sd_paint(Plugin):
                 e_context.action = EventAction.BREAK_PASS
             else:
                 reply.type = ReplyType.ERROR
-                reply.content = "生成绘画失败，请稍后再试。"
+                reply.content = "生成图像失败，请稍后再试。"
                 e_context["reply"] = reply
                 e_context.action = EventAction.BREAK_PASS
 
-    def get_sd_paint(self, prompt):
-        params = {"prompt": prompt}
+    def sd_paint(self, prompt, model="normal"):
+        params = {
+            "prompt": prompt,
+            "model": model
+        }
         try:
-            response = requests.get(url=SD_PAINT_URL, params=params, timeout=30)
+            response = requests.get(url=ART_GENERATION_URL, params=params, timeout=10)
             if response.status_code == 200:
                 data = response.json()
-                if data["code"] == 200:
-                    return f"AI绘画成功：\n绘画关键词: {data['prompt']}\n图片链接: {data['imgurl']}"
+                if data.get("code") == 200:
+                    return f"生成的图像链接: {data.get('imgurl')}"
                 else:
-                    logger.error(f"AI绘画接口返回错误信息: {data['msg']}")
+                    logger.error(f"API返回错误信息: {data.get('msg')}")
                     return None
             else:
-                logger.error(f"AI绘画接口返回值异常: {response.text}")
+                logger.error(f"API返回状态码异常: {response.status_code}")
                 return None
         except Exception as e:
-            logger.error(f"AI绘画接口异常：{e}")
+            logger.error(f"API请求异常：{e}")
             return None
