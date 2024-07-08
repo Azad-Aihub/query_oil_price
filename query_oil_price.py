@@ -57,12 +57,13 @@ class query_oil_price(Plugin):
                     oil_types = ["p0", "p89", "p92", "p95", "p98"]
                     for oil_type in oil_types:
                         if oil_type in province_data:
-                            gas_type = oil_type.replace("p", "")  # 去掉价格代码中的"p"
                             price = province_data[oil_type]
                             if oil_type == "p0":
                                 gas_type = "0号柴油"
-                            elif oil_type in ["p92", "p95", "p98"]:
-                                gas_type = f"{gas_type}号汽油"
+                            elif oil_type == "p89":
+                                gas_type = "89号汽油"
+                            else:
+                                gas_type = f"{oil_type[1:]}号汽油"
                             formatted_output += f"{gas_type}: {price}元/升\n"
                     return formatted_output.strip()
                 else:
